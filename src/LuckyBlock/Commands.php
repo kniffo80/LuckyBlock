@@ -181,6 +181,9 @@ class Commands extends Command implements PluginIdentifiableCommand
                             if ($this->luckyBlock->isExists($this->data["items_dropped"], $item)) {
                                 $it = [];
                                 foreach ($this->data["items_dropped"] as $i) {
+                                    /**
+                                     * @var $i Item
+                                     */
                                     if ($i->getId() !== $item->getId() && $i->getDamage() !== $item->getId())
                                         $it[] = $i->getId() . ":" . $i->getDamage();
                                 }
@@ -193,8 +196,12 @@ class Commands extends Command implements PluginIdentifiableCommand
                         break;
                     case "list":
                         $list = $this->tag . "List of items: ";
-                        foreach ($this->data["items_dropped"] as $item)
+                        foreach ($this->data["items_dropped"] as $item) {
+                            /**
+                             * @var $item Item
+                             */
                             $list .= $item->getName() . "(id=" . $item->getId() . " damage=" . $item->getDamage() . "); ";
+                        }
                         $sender->sendMessage($list);
                         break;
                     case "max":

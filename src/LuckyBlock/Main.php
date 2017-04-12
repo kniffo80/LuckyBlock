@@ -21,6 +21,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+
 namespace LuckyBlock;
 
 use pocketmine\command\ConsoleCommandSender;
@@ -28,6 +29,7 @@ use pocketmine\entity\Effect;
 use pocketmine\entity\Entity;
 use pocketmine\event\Listener;
 use pocketmine\level\Level;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\DoubleTag;
@@ -50,8 +52,7 @@ use pocketmine\tile\Sign;
 use pocketmine\tile\Tile;
 use pocketmine\block\Sapling;
 
-class Main extends PluginBase implements Listener
-{
+class Main extends PluginBase implements Listener {
     /** @var string */
     private $tag = TextFormat::GOLD . "[" . TextFormat::YELLOW . "LuckyBlock" . TextFormat::GOLD . "] " . TextFormat::WHITE;
     /** @var Config */
@@ -69,14 +70,23 @@ class Main extends PluginBase implements Listener
         "max_duration" => 20,
         "potions" => [],
         "items_dropped" => [],
-        "functions" => ["spawnTree" => true, "explosion" => true, "dropItem" => true, "bedrock" => true, "prison" => true, "chest" => true, "teleport" => true, "potion" => true, "mob" => true, "execCmd" => true, "lightning" => true],
+        "functions" => ["spawnTree" => true,
+                        "explosion" => true,
+                        "dropItem" => true,
+                        "bedrock" => true,
+                        "prison" => true,
+                        "chest" => true,
+                        "teleport" => true,
+                        "potion" => true,
+                        "mob" => true,
+                        "execCmd" => true,
+                        "lightning" => false],
         "commands" => [],
         "mob" => [],
         "mob_explosion_delay" => 1
     ];
 
-    public function onEnable()
-    {
+    public function onEnable() {
         $dataResources = $this->getDataFolder() . "/resources/";
         if (!file_exists($this->getDataFolder()))
             @mkdir($this->getDataFolder(), 0755, true);
@@ -110,8 +120,7 @@ class Main extends PluginBase implements Listener
         $this->getServer()->getCommandMap()->register("luckyblock", new Commands($this, $this->setup, $this->data));
     }
 
-    public function reloadSetup(&$data = false, &$setup = false)
-    {
+    public function reloadSetup(&$data = false, &$setup = false) {
         $this->setup->save();
         $this->data["status"] = $this->setup->get("status");
 
@@ -167,8 +176,7 @@ class Main extends PluginBase implements Listener
         $setup = $this->setup;
     }
 
-    public function getItem($string): Item
-    {
+    public function getItem($string): Item {
         $e = explode(":", $string);
         $id = $e[0];
         if (is_numeric($id)) {
@@ -187,8 +195,7 @@ class Main extends PluginBase implements Listener
         return new Item(0);
     }
 
-    public function isExists(array $arr, Item $item): bool
-    {
+    public function isExists(array $arr, Item $item): bool {
         foreach ($arr as $it) {
             if ($it instanceof Item) {
                 if ($it->getId() == $item->getId() && $it->getDamage() == $item->getDamage())
@@ -198,8 +205,7 @@ class Main extends PluginBase implements Listener
         return false;
     }
 
-    public function isExistsEntity($name): bool
-    {
+    public function isExistsEntity($name): bool {
         $nbt = new CompoundTag("", [
             new ListTag("Pos", [
                 new DoubleTag("", 0),
@@ -212,15 +218,14 @@ class Main extends PluginBase implements Listener
             ])
         ]);
         $name = str_replace(" ", "", ucwords($name));
-        $entity = Entity::createEntity($name, $this->getServer()->getDefaultLevel()->getChunk(0, 0, true), $nbt);
+        $entity = Entity::createEntity($name, $this->getServer()->getDefaultLevel(), $nbt);
         if (!($entity instanceof Entity))
             return false;
         $entity->close();
         return true;
     }
 
-    public function isAllowedWorld(Level $level): bool
-    {
+    public function isAllowedWorld(Level $level): bool {
         if ($this->data["status"] !== "on")
             return false;
 
@@ -238,8 +243,7 @@ class Main extends PluginBase implements Listener
     }
 
     /** Thanks to @dxm_hippie for this code */
-    private function itemLoop(Player $player, Position $pos): bool
-    {
+    private function itemLoop(Player $player, Position $pos): bool {
         if (mt_rand(1, 2) === 2) {
             if (count($this->data["items_dropped"]) === 0)
                 $item = $this->randItem();
@@ -252,8 +256,7 @@ class Main extends PluginBase implements Listener
         return false;
     }
 
-    private function itemLoop2(Player $player, Position $pos)
-    {
+    private function itemLoop2(Player $player, Position $pos) {
         if (mt_rand(1, 3) === 2) {
             for ($i = 1; $i <= 3; $i++) {
                 if (count($this->data["items_dropped"]) === 0)
@@ -268,8 +271,7 @@ class Main extends PluginBase implements Listener
 
     /** END CODE */
 
-    private function randItem(): Item
-    {
+    private function randItem(): Item {
         $o = mt_rand(1, Item::$list->getSize());
         $i = Item::$list[$o];
         while (is_null($i) && count(explode("item", $i)) > 0) {
@@ -279,8 +281,7 @@ class Main extends PluginBase implements Listener
         return new Item($o);
     }
 
-    public function blockBreak(BlockBreakEvent $event)
-    {
+    public function blockBreak(BlockBreakEvent $event) {
         $block = $event->getBlock();
         if ($block->getId() === $this->data["lucky_block"] && $this->isAllowedWorld($block->getLevel())) {
             $player = $event->getPlayer();
@@ -310,17 +311,17 @@ class Main extends PluginBase implements Listener
                             $player->getLevel()->getBlock($block)->onActivate(new Item(Item::DYE, 15), $player);
                             $player->sendMessage($this->tag . $this->message->get("tree"));
                         }
-                        break;
                     }
+                    break;
                 case 2:
                     if (!isset($this->data["functions"]["explosion"]) || $this->data["functions"]["explosion"]) {
                         $explosion = new Explosion($block, mt_rand($this->data["explosion_min"], $this->data["explosion_max"]));
                         if ($explosion->explodeA())
                             $explosion->explodeB();
                         $player->sendMessage($this->tag . $this->message->get("explosion"));
-                        break;
-                    }
 
+                    }
+                    break;
                 case 3:
                     if (!isset($this->data["functions"]["dropItem"]) || $this->data["functions"]["dropItem"]) {
                         if (mt_rand(0, 1)) {
@@ -333,8 +334,8 @@ class Main extends PluginBase implements Listener
                             $item = $this->data["items_dropped"][mt_rand(0, count($this->data["items_dropped"]) - 1)];
                         $player->getLevel()->dropItem($block, $item);
                         $player->sendMessage($this->tag . $this->message->get("drop"));
-                        break;
                     }
+                    break;
                 case 4:
                     if (!isset($this->data["functions"]["bedrock"]) || $this->data["functions"]["bedrock"]) {
                         $player->getLevel()->setBlock($block, new Block(Block::BEDROCK));
@@ -343,7 +344,7 @@ class Main extends PluginBase implements Listener
                             break;
                         $block->getLevel()->setBlock($p, Block::get(Item::SIGN_POST));
 
-                        $sign = new Sign($player->getLevel()->getChunk($block->x >> 4, $block->z >> 4), new CompoundTag(false, array(
+                        $sign = new Sign($player->getLevel(), new CompoundTag(false, array(
                             new IntTag("x", (int)$block->x),
                             new IntTag("y", (int)$block->y + 1),
                             new IntTag("z", (int)$block->z),
@@ -352,8 +353,8 @@ class Main extends PluginBase implements Listener
                         )));
                         $sign->spawnToAll();
                         $player->sendMessage($this->tag . $this->message->get("sign"));
-                        break;
                     }
+                    break;
                 case 5:
                     if (!isset($this->data["functions"]["prison"]) || $this->data["functions"]["prison"]) {
                         $pos = $event->getPlayer();
@@ -468,11 +469,15 @@ class Main extends PluginBase implements Listener
                                 break;
                         }
                         $pos = $player->getPosition();
+                        /**
+                         * @var $pos Vector3
+                         */
                         foreach ($arr as $i => $c) {
                             $player->getLevel()->setBlock($pos->add($c["x"], $c["y"], $c["z"]), Block::get($c["block"]), true, true);
                         }
-                        break;
+
                     }
+                    break;
                 case 6:
                     if (!isset($this->data["functions"]["chest"]) || $this->data["functions"]["chest"]) {
                         $player->getLevel()->setBlock($block, new Block(Block::CHEST), true, true);
@@ -484,7 +489,7 @@ class Main extends PluginBase implements Listener
                             new IntTag("z", $block->z)
                         ]);
                         $nbt->Items->setTagType(NBT::TAG_Compound);
-                        $tile = Tile::createTile("Chest", $block->getLevel()->getChunk($block->x >> 4, $block->z >> 4), $nbt);
+                        $tile = Tile::createTile("Chest", $block->getLevel(), $nbt);
                         if ($tile instanceof Chest) {
                             for ($i = 0; $i <= mt_rand(1, $this->data["max_chest_item"]); $i++) {
                                 if (count($this->data["items_dropped"]) === 0)
@@ -495,16 +500,14 @@ class Main extends PluginBase implements Listener
                             }
                             $player->sendMessage($this->tag . $this->message->get("chest"));
                         }
-                        break;
                     }
-
+                    break;
                 case 7:
                     if (!isset($this->data["functions"]["teleport"]) || $this->data["functions"]["teleport"]) {
-
                         $player->teleport($player->getLevel()->getSpawnLocation(), $player->getYaw(), $player->getPitch());
                         $player->sendMessage($this->tag . $this->message->get("spawn"));
-                        break;
                     }
+                    break;
                 case 8:
                     if (!isset($this->data["functions"]["potion"]) || $this->data["functions"]["potion"]) {
                         if (count($this->data["potions"])) {
@@ -513,10 +516,11 @@ class Main extends PluginBase implements Listener
                             $player->addEffect($effect);
                             $player->sendMessage($this->tag . $this->message->get("effect"));
 
-                        } else
+                        } else {
                             $player->sendMessage($this->tag . $this->message->get("unlucky"));
-                        break;
+                        }
                     }
+                    break;
 
                 case 9: //exec command
                     if (!isset($this->data["functions"]["execCmd"]) || $this->data["functions"]["execCmd"]) {
@@ -525,9 +529,9 @@ class Main extends PluginBase implements Listener
                             $cmd = str_replace(["%PLAYER%", "%X%", "%Y%", "%Z%", "%WORLD%", "%IP%", "%XP%"], [$player->getName(), $player->getX(), $player->getY(), $player->getZ(), $player->getLevel()->getName(), $player->getAddress(), $player->getXpLevel()], $cmd);
                             $this->getServer()->dispatchCommand(new ConsoleCommandSender(), $cmd);
                             $player->sendMessage($this->tag . $this->message->get("command"));
-                            break;
                         }
                     }
+                    break;
                 case 10://mob
                     if (!isset($this->data["functions"]["mob"]) || $this->data["functions"]["mob"]) {
 
@@ -546,25 +550,24 @@ class Main extends PluginBase implements Listener
                                     ]),
                                     new StringTag("CustomName", $this->tag)
                                 ]);
-                                $entity = Entity::createEntity($mob, $player->getLevel()->getChunk($block->getX() >> 4, $block->getZ() >> 4), $nbt);
+                                $entity = Entity::createEntity($mob, $player->getLevel(), $nbt);
                                 if ($entity instanceof Entity) {
                                     $entity->spawnToAll();
                                     $this->getServer()->getScheduler()->scheduleDelayedTask(new TaskExplodeMob($this, $entity, mt_rand($this->data["explosion_min"], $this->data["explosion_max"])), 20 * mt_rand(1, $this->data["mob_explosion_delay"]));
                                     $player->sendMessage($this->tag . $this->message->get("mob"));
-                                    break;
                                 }
                             }
                         }
                     }
+                    break;
 
-                case 11:
-                    if (!isset($this->data["functions"]["lightning"]) || $this->data["functions"]["lightning"]) {
-
-                        $player->getLevel()->spawnLightning($player);
-                        $player->sendMessage($this->tag . $this->message->get("lightning"));
-                        break;
-                    }
-                case 12:
+//                case 11:
+//                    if (!isset($this->data["functions"]["lightning"]) || $this->data["functions"]["lightning"]) {
+//                        $player->getLevel()->spawnLightning($player);
+//                        $player->sendMessage($this->tag . $this->message->get("lightning"));
+//                    }
+//                    break;
+                default:
                     $player->sendMessage($this->tag . $this->message->get("unlucky"));
                     break;
             }

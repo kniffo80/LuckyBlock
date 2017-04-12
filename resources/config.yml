@@ -1,40 +1,18 @@
 ---
-#sets the block to activate the plugin
 lucky_block: 19
-
-#write here the item list(max allowed: infinite)
-#example
 items_dropped:
-- "tnt"
+- tnt
 - "259"
 - "17:1"
-
-#the maximum of the items that the plugin will put inside the chest
 max_chest_item: 4
-
-#the minimum radius of the explosion
 explosion_min: 1
-#the maximum radius of the explosion
 explosion_max: 3
-
-#turn on/off the plugin
 status: "on"
-
-#write here the world name where you want LuckyBlock works!
-#set this field empty if you want that works on all worlds in the server
-#if you want to apply only on two or more worlds, enter the names of the worlds separated by a comma
-#example level: world, hungergames, lobby
 level: []
-
-#write here the name of the potions that you want to be enabled in the plugin
-#you can find potions available here https://github.com/PocketMine/PocketMine-MP/blob/master/src/pocketmine/entity/Effect.php
 potion:
-- "poison"
-- "slowless"
-
-#write here how many seconds maximum should past for the potions
+- poison
+- slowless
 max_duration: 20
-#The list of available functions. You can disabled or activate them with false or true.
 functions:
   spawnTree: true
   explosion: true
@@ -47,28 +25,13 @@ functions:
   mob: true
   execCmd: true
   lightning: true
-
-#List of mobs that can be spammed.
 mob:
 - Cow
 - Pig
 - Zombie
-
-#The maximum time that the mob may explode (Seconds)
 mob_explosion_delay: 1
-
-#The list of commands that can be run from the console.
-#The command can be executed on the player by writing %PLAYER% in the line.
-#It is possible to use other parameters as the player:
-# - %PLAYER% => the name of the player
-# - %WORLD% => the world where the player is located
-# - %X% => the position of the player
-# - %Y% => the position of the player
-# - %Z% => the position of the player
-# - %IP% => the address of the player
-# - %XP% => the experience of the player
 commands:
 - kick %PLAYER% You aren't Lucky!
 - banip %IP%
-
+potions: []
 ...
