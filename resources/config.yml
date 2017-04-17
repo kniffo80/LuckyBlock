@@ -1,37 +1,52 @@
 ---
+# set which type is lucky block (at the moment it's sponge)
 lucky_block: 19
+# which items can be dropped by random
 items_dropped:
 - tnt
 - "259"
 - "17:1"
+# how many chest items do we have in max?
 max_chest_item: 4
+# explosion radius min
 explosion_min: 1
+# explosion radius max
 explosion_max: 3
+# enable this plugin?!
 status: "on"
-level: []
-potion:
-- poison
-- slowless
+# which levels is lucky block working in?
+level:
+- can
+- nether
+# max effect duration
 max_duration: 20
+# enable or disable results of block breaking action
 functions:
-  spawnTree: true
-  explosion: true
+  spawnTree: false
+  explosion: false
   dropItem: true
   bedrock: true
   prison: true
-  chest: true
+  chest: false
   teleport: true
   potion: true
   mob: true
-  execCmd: true
-  lightning: true
+  execCmd: false
+  lightning: false
+# which mobs to spawn
 mob:
 - Cow
 - Pig
-- Zombie
+# delay of explosion of mobs
 mob_explosion_delay: 1
+# command executed
 commands:
 - kick %PLAYER% You aren't Lucky!
 - banip %IP%
-potions: []
+# potion effects
+potions:
+- poison
+- slowless
+# spawn chance of a lucky block when a block is broken finally
+sponge_spawn_chance: 1
 ...
