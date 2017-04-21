@@ -356,7 +356,7 @@ class Main extends PluginBase implements Listener {
             }
             $event->setCancelled();
             $player->getLevel()->setBlock($block, new Block(Block::AIR), false, true);
-            $result = mt_rand(0, count($this->enabledResults) - 1);
+            $result = $this->enabledResults[mt_rand(0, count($this->enabledResults) - 1)];
             self::logOutput("Replaced through air ... spawn result is $result while array length is " . count($this->enabledResults));
             switch ($result) {
                 case Constants::SPAWN_TREE: // spawn a tree
